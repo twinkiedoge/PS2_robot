@@ -23,6 +23,7 @@ PS2X ps2x;
 //--------------------------stuff that has to do with motor setup--------------------------------
 
 int motorspeed = 0;
+float sensitivity = 0.8;
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *rightmotor = AFMS.getMotor(3);
 Adafruit_DCMotor *leftmotor = AFMS.getMotor(4);
@@ -30,8 +31,9 @@ Adafruit_DCMotor *leftmotor = AFMS.getMotor(4);
 
 void setup() {
   Serial.begin(57600);
-  Serial.print("serial initialized ");
   delay(300);
+  Serial.println("serial initialized ");
+  
   //motor
   AFMS.begin();
   rightmotor-> setSpeed(motorspeed);
@@ -41,7 +43,7 @@ void setup() {
   rightmotor->run(RELEASE);
   leftmotor->run(RELEASE);
 
-  //from PS2X library example Bill Porter?
+  //--------------------------from PS2X library example Bill Porter?--------------------------------------------------------------
 error = ps2x.config_gamepad(PS2_CLK, PS2_CMD, PS2_SEL, PS2_DAT, pressures, rumble);
   
   if(error == 0){
@@ -85,29 +87,37 @@ error = ps2x.config_gamepad(PS2_CLK, PS2_CMD, PS2_SEL, PS2_DAT, pressures, rumbl
       Serial.print("Wireless Sony DualShock Controller found ");
       break;
    }
-//end of code used from example
+//----------------------------end of code used from example-----------------------------------------
 
 }
 
 void loop() {
-  if(ps2x.Button(PSB_R1)) {
-    int rightstickx = ps2x.Analog(PSS_RX);
-    int rightsticky = ps2x.Analog(PSS_RY);
-
-    int rspeed = (rightstickx-127)*2;
-    int lspeed = rightstickx*2;
+ps2x.read_gamepad(false, vibrate); 
     rightmotor->run(FORWARD);
     leftmotor->run(FORWARD);
-    rightmotor->setSpeed(rspeed);
-    leftmotor->setSpeed(lspeed);
-    Serial.println(ps2x.Analog(PSS_RX));
-      //Serial.println(rspeed);
-     delay(50);  
-   
+  if(ps2x.Button(PSB_R1)) {
+    int rightstickx = ps2x.Analog(PSS_RX);
+    if(rightstickx>134){
+      int rspeed = (rightstickx*sensitivity);
+      int lspeed = 255-rspeed;
+      rightmotor->setSpeed(rspeed);
+      leftmotor->setSpeed(lspeed);
+    }else if(rightstickx<120){
+      int lspeed = ((rightstickx*-1)+255)*sensitivity;
+      int rspeed = 255-lspeed;
+      rightmotor->setSpeed(rspeed);
+      leftmotor->setSpeed(lspeed);
+    }else{
+      rightmotor->setSpeed(200);
+      leftmotor->setSpeed(200);
+    }
+   }
+   if (ps2x.NewButtonState(PSB_CROSS)){
+      rightmotor->setSpeed(1000);
+      leftmotor->setSpeed(1000);
+      //delay(100);
+      rightmotor->setSpeed(0);
+      leftmotor->setSpeed(0);
+      Serial.println("stop");
   }
-  
-  //rightmotor->run(FORWARD);
-  //leftmotor->run(FORWARD);
-  //rightmotor->setSpeed(motorspeed);
-  //leftmotor->setSpeed(motorspeed);
 }
