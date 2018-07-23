@@ -113,11 +113,8 @@ ps2x.read_gamepad(false, vibrate);
     }
    }
    if (ps2x.NewButtonState(PSB_CROSS)){
-      rightmotor->setSpeed(1000);
-      leftmotor->setSpeed(1000);
-      //delay(100);
       rightmotor->setSpeed(0);
       leftmotor->setSpeed(0);
-      Serial.println("stop");
-  }
+      
+   }
 }
