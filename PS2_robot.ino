@@ -27,21 +27,20 @@ float spd = 0.5;
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *rightmotor = AFMS.getMotor(3);
 Adafruit_DCMotor *leftmotor = AFMS.getMotor(4);
+
 //--------------------------stuff that has to do with ultrasonic setup--------------------------------
 const int trigpin = 8;
 const int echopin = 9;
 long duration;
 int distance;
 
-
+//function used to get a distance reading from ultrasonic sensor in CM
 int readdistance(){
   digitalWrite(trigpin, LOW);
   delayMicroseconds(2);
-
   digitalWrite(trigpin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigpin, LOW);
-
   duration = pulseIn(echopin, HIGH);
   distance = duration*(0.034/2);
   return distance;
@@ -109,15 +108,14 @@ error = ps2x.config_gamepad(PS2_CLK, PS2_CMD, PS2_SEL, PS2_DAT, pressures, rumbl
       Serial.print("Wireless Sony DualShock Controller found ");
       break;
    }
+}
 //----------------------------end of code used from example-----------------------------------------
 
-}
-
 void loop() {
+
 ps2x.read_gamepad(false, vibrate);
-rightmotor->run(FORWARD);
-leftmotor->run(FORWARD);
 int dist = readdistance();
+
 if(dist>25){
   if(ps2x.Button(PSB_R1)) {
     rightmotor->run(FORWARD);
@@ -148,6 +146,8 @@ if(dist>25){
    }
   
 }else{
+
+  //Slows robot down without falling over and then reverses
   rightmotor->setSpeed(150*spd);
   leftmotor->setSpeed(150*spd);
   delay(200);
@@ -161,7 +161,6 @@ if(dist>25){
   rightmotor->setSpeed(100*spd);
   leftmotor->setSpeed(100*spd);
   delay(1000);
-  
   }
 }
 
